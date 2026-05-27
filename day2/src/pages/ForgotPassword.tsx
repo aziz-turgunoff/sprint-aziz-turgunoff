@@ -31,12 +31,17 @@ export function ForgotPassword() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Check your email</CardTitle>
-            <CardDescription>
-              We've sent a password reset link to {email}
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+        <Card className="w-full max-w-md shadow-xl border-0">
+          <CardHeader className="space-y-3">
+            <div className="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
+              <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <CardTitle className="text-center">Check your email</CardTitle>
+            <CardDescription className="text-center">
+              We've sent a password reset link to <span className="font-semibold text-gray-900">{email}</span>
             </CardDescription>
           </CardHeader>
           <CardFooter>
@@ -52,11 +57,14 @@ export function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Reset password</CardTitle>
-          <CardDescription>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="space-y-3 pb-6">
+          <div className="mx-auto h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+            T
+          </div>
+          <CardTitle className="text-2xl text-center">Reset password</CardTitle>
+          <CardDescription className="text-center">
             Enter your email and we'll send you a reset link
           </CardDescription>
         </CardHeader>

@@ -42,11 +42,14 @@ export function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Set new password</CardTitle>
-          <CardDescription>Enter your new password below</CardDescription>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="space-y-3 pb-6">
+          <div className="mx-auto h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+            T
+          </div>
+          <CardTitle className="text-2xl text-center">Set new password</CardTitle>
+          <CardDescription className="text-center">Enter your new password below</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">

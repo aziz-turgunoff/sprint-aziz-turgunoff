@@ -46,11 +46,16 @@ export function Signup() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Account created!</CardTitle>
-            <CardDescription>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+        <Card className="w-full max-w-md shadow-xl border-0">
+          <CardHeader className="space-y-3">
+            <div className="mx-auto h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
+              <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <CardTitle className="text-center">Account created!</CardTitle>
+            <CardDescription className="text-center">
               Check your email to confirm your account. Redirecting to login...
             </CardDescription>
           </CardHeader>
@@ -60,11 +65,14 @@ export function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Create an account</CardTitle>
-          <CardDescription>Get started with your todo list</CardDescription>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="space-y-3 pb-6">
+          <div className="mx-auto h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+            T
+          </div>
+          <CardTitle className="text-2xl text-center">Create an account</CardTitle>
+          <CardDescription className="text-center">Get started with your todo list</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">

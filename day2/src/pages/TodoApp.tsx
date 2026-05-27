@@ -9,7 +9,10 @@ import { Checkbox } from '../components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../components/ui/alert-dialog'
-import { LogOut, Plus, Pencil, Trash2 } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
+import { Badge } from '../components/ui/badge'
+import { Separator } from '../components/ui/separator'
+import { LogOut, Plus, Pencil, Trash2, CheckCircle2, Circle, Calendar, Filter, SortAsc } from 'lucide-react'
 
 type FilterStatus = 'all' | 'active' | 'completed'
 type FilterPriority = 'all' | 'low' | 'med' | 'high'
@@ -202,156 +205,253 @@ export function TodoApp() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-50'
-      case 'med': return 'text-yellow-600 bg-yellow-50'
-      case 'low': return 'text-green-600 bg-green-50'
-      default: return ''
+      case 'high': return 'destructive'
+      case 'med': return 'default'
+      case 'low': return 'secondary'
+      default: return 'default'
+    }
+  }
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'High Priority'
+      case 'med': return 'Medium'
+      case 'low': return 'Low Priority'
+      default: return priority
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-sm text-muted-foreground">Loading your todos...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">My Todos</h1>
-            <p className="text-sm text-gray-600">{user?.email}</p>
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                My Todos
+              </h1>
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                {user?.email}
+              </p>
+            </div>
+            <Button variant="outline" onClick={() => signOut()} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
           </div>
-          <Button variant="outline" onClick={() => signOut()}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Stats */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6 flex items-center justify-between">
-          <div className="text-sm">
-            <span className="font-semibold">{activeCount}</span> active, {' '}
-            <span className="font-semibold">{completedCount}</span> completed
-          </div>
-          <Button onClick={() => setShowCreateForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Todo
-          </Button>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="border-l-4 border-l-blue-500">
+            <CardHeader className="pb-3">
+              <CardDescription>Total Tasks</CardDescription>
+              <CardTitle className="text-3xl">{todos.length}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="border-l-4 border-l-amber-500">
+            <CardHeader className="pb-3">
+              <CardDescription>Active</CardDescription>
+              <CardTitle className="text-3xl flex items-center gap-2">
+                {activeCount}
+                <Circle className="h-5 w-5 text-amber-500" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="border-l-4 border-l-green-500">
+            <CardHeader className="pb-3">
+              <CardDescription>Completed</CardDescription>
+              <CardTitle className="text-3xl flex items-center gap-2">
+                {completedCount}
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
-              <Label className="text-xs mb-1 block">Status</Label>
-              <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as FilterStatus)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Action Bar */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Filter className="h-4 w-4" />
+                <span className="font-medium">Filters & Sorting</span>
+              </div>
+              <Button onClick={() => setShowCreateForm(true)} className="gap-2 shadow-md">
+                <Plus className="h-4 w-4" />
+                New Todo
+              </Button>
             </div>
-            <div className="flex-1 min-w-[200px]">
-              <Label className="text-xs mb-1 block">Priority</Label>
-              <Select value={filterPriority} onValueChange={(v) => setFilterPriority(v as FilterPriority)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="med">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                </SelectContent>
-              </Select>
+            
+            <Separator className="my-4" />
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-medium flex items-center gap-2">
+                  <Circle className="h-3 w-3" />
+                  Status
+                </Label>
+                <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as FilterStatus)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Tasks</SelectItem>
+                    <SelectItem value="active">Active Only</SelectItem>
+                    <SelectItem value="completed">Completed Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-medium flex items-center gap-2">
+                  <Filter className="h-3 w-3" />
+                  Priority
+                </Label>
+                <Select value={filterPriority} onValueChange={(v) => setFilterPriority(v as FilterPriority)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Priorities</SelectItem>
+                    <SelectItem value="high">High Priority</SelectItem>
+                    <SelectItem value="med">Medium Priority</SelectItem>
+                    <SelectItem value="low">Low Priority</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-medium flex items-center gap-2">
+                  <SortAsc className="h-3 w-3" />
+                  Sort by
+                </Label>
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="created">Created Date</SelectItem>
+                    <SelectItem value="due">Due Date</SelectItem>
+                    <SelectItem value="priority">Priority Level</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="flex-1 min-w-[200px]">
-              <Label className="text-xs mb-1 block">Sort by</Label>
-              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="created">Created date</SelectItem>
-                  <SelectItem value="due">Due date</SelectItem>
-                  <SelectItem value="priority">Priority</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Todo List */}
         <div className="space-y-3">
           {filteredAndSortedTodos.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-12 text-center">
-              <p className="text-gray-500">No todos found. Create your first one!</p>
-            </div>
+            <Card className="border-dashed">
+              <CardContent className="pt-12 pb-12 text-center">
+                <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <CheckCircle2 className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No todos found</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  {filterStatus !== 'all' || filterPriority !== 'all' 
+                    ? 'Try adjusting your filters to see more tasks.'
+                    : 'Get started by creating your first todo!'}
+                </p>
+                {filterStatus === 'all' && filterPriority === 'all' && (
+                  <Button onClick={() => setShowCreateForm(true)} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Create Your First Todo
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           ) : (
             filteredAndSortedTodos.map(todo => (
-              <div
+              <Card
                 key={todo.id}
-                className={`bg-white rounded-lg shadow p-4 flex items-start gap-4 ${
-                  todo.completed ? 'opacity-60' : ''
+                className={`transition-all hover:shadow-md ${
+                  todo.completed ? 'opacity-60 bg-muted/30' : 'bg-white'
                 }`}
               >
-                <Checkbox
-                  checked={todo.completed}
-                  onCheckedChange={() => toggleComplete(todo)}
-                  className="mt-1"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3
-                      className={`font-medium ${
-                        todo.completed ? 'line-through text-gray-500' : ''
-                      }`}
-                    >
-                      {todo.title}
-                    </h3>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditDialog(todo)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeletingTodo(todo)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-600" />
-                      </Button>
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <Checkbox
+                      checked={todo.completed}
+                      onCheckedChange={() => toggleComplete(todo)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1 min-w-0 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3
+                            className={`text-lg font-semibold leading-tight ${
+                              todo.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+                            }`}
+                          >
+                            {todo.title}
+                          </h3>
+                          {todo.description && (
+                            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                              {todo.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(todo)}
+                            className="h-8 w-8"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeletingTodo(todo)}
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant={getPriorityColor(todo.priority)} className="font-medium">
+                          {getPriorityLabel(todo.priority)}
+                        </Badge>
+                        {todo.due_date && (
+                          <Badge variant="outline" className="gap-1.5">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(todo.due_date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </Badge>
+                        )}
+                        {todo.completed && (
+                          <Badge variant="secondary" className="gap-1.5">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Completed
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  {todo.description && (
-                    <p className="text-sm text-gray-600 mt-1">{todo.description}</p>
-                  )}
-                  <div className="flex items-center gap-3 mt-2 text-xs">
-                    <span className={`px-2 py-1 rounded ${getPriorityColor(todo.priority)}`}>
-                      {todo.priority}
-                    </span>
-                    {todo.due_date && (
-                      <span className="text-gray-500">
-                        Due: {new Date(todo.due_date).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))
           )}
         </div>
@@ -359,15 +459,19 @@ export function TodoApp() {
 
       {/* Create Todo Dialog */}
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <form onSubmit={createTodo}>
             <DialogHeader>
-              <DialogTitle>Create new todo</DialogTitle>
-              <DialogDescription>Add a new task to your list</DialogDescription>
+              <DialogTitle className="text-2xl">Create New Todo</DialogTitle>
+              <DialogDescription>
+                Add a new task to your list. Fill in the details below.
+              </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-5 py-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title" className="text-sm font-medium">
+                  Title <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="title"
                   value={newTitle}
@@ -375,48 +479,71 @@ export function TodoApp() {
                   placeholder="What needs to be done?"
                   maxLength={120}
                   required
+                  className="text-base"
                 />
-                <p className="text-xs text-gray-500">{newTitle.length}/120</p>
+                <p className="text-xs text-muted-foreground text-right">
+                  {newTitle.length}/120 characters
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-sm font-medium">
+                  Description
+                </Label>
                 <Textarea
                   id="description"
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="Add more details..."
-                  rows={3}
+                  placeholder="Add more details about this task..."
+                  rows={4}
+                  className="resize-none"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="dueDate">Due date</Label>
-                <Input
-                  id="dueDate"
-                  type="date"
-                  value={newDueDate}
-                  onChange={(e) => setNewDueDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="priority">Priority</Label>
-                <Select value={newPriority} onValueChange={(v) => setNewPriority(v as any)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="med">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dueDate" className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="h-3.5 w-3.5" />
+                    Due Date
+                  </Label>
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={newDueDate}
+                    onChange={(e) => setNewDueDate(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="priority" className="text-sm font-medium">
+                    Priority Level
+                  </Label>
+                  <Select value={newPriority} onValueChange={(v) => setNewPriority(v as any)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low Priority</SelectItem>
+                      <SelectItem value="med">Medium</SelectItem>
+                      <SelectItem value="high">High Priority</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={creating || !newTitle.trim()}>
-                {creating ? 'Creating...' : 'Create'}
+              <Button type="submit" disabled={creating || !newTitle.trim()} className="gap-2">
+                {creating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    Create Todo
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </form>
@@ -425,62 +552,89 @@ export function TodoApp() {
 
       {/* Edit Todo Dialog */}
       <Dialog open={!!editingTodo} onOpenChange={() => setEditingTodo(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <form onSubmit={updateTodo}>
             <DialogHeader>
-              <DialogTitle>Edit todo</DialogTitle>
-              <DialogDescription>Update your task details</DialogDescription>
+              <DialogTitle className="text-2xl">Edit Todo</DialogTitle>
+              <DialogDescription>
+                Update your task details below.
+              </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-5 py-6">
               <div className="space-y-2">
-                <Label htmlFor="editTitle">Title *</Label>
+                <Label htmlFor="editTitle" className="text-sm font-medium">
+                  Title <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="editTitle"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value.slice(0, 120))}
                   maxLength={120}
                   required
+                  className="text-base"
                 />
-                <p className="text-xs text-gray-500">{editTitle.length}/120</p>
+                <p className="text-xs text-muted-foreground text-right">
+                  {editTitle.length}/120 characters
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="editDescription">Description</Label>
+                <Label htmlFor="editDescription" className="text-sm font-medium">
+                  Description
+                </Label>
                 <Textarea
                   id="editDescription"
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  rows={3}
+                  rows={4}
+                  className="resize-none"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="editDueDate">Due date</Label>
-                <Input
-                  id="editDueDate"
-                  type="date"
-                  value={editDueDate}
-                  onChange={(e) => setEditDueDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="editPriority">Priority</Label>
-                <Select value={editPriority} onValueChange={(v) => setEditPriority(v as any)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="med">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editDueDate" className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="h-3.5 w-3.5" />
+                    Due Date
+                  </Label>
+                  <Input
+                    id="editDueDate"
+                    type="date"
+                    value={editDueDate}
+                    onChange={(e) => setEditDueDate(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editPriority" className="text-sm font-medium">
+                    Priority Level
+                  </Label>
+                  <Select value={editPriority} onValueChange={(v) => setEditPriority(v as any)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low Priority</SelectItem>
+                      <SelectItem value="med">Medium</SelectItem>
+                      <SelectItem value="high">High Priority</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={() => setEditingTodo(null)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={updating || !editTitle.trim()}>
-                {updating ? 'Updating...' : 'Update'}
+              <Button type="submit" disabled={updating || !editTitle.trim()} className="gap-2">
+                {updating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="h-4 w-4" />
+                    Update Todo
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </form>
@@ -491,14 +645,16 @@ export function TodoApp() {
       <AlertDialog open={!!deletingTodo} onOpenChange={() => setDeletingTodo(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete todo?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete "{deletingTodo?.title}".
+            <AlertDialogTitle className="text-xl">Delete this todo?</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              This action cannot be undone. This will permanently delete{' '}
+              <span className="font-semibold text-foreground">"{deletingTodo?.title}"</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={deleteTodo} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction onClick={deleteTodo} className="bg-destructive hover:bg-destructive/90 gap-2">
+              <Trash2 className="h-4 w-4" />
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

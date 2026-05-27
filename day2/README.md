@@ -1,8 +1,8 @@
 # Day 2 — Multi-User Todo App
 
-**Live URL:** [To be deployed]  
+**Live URL:** https://sprint-aziz-turgunoff-3kje.vercel.app  
 **Demo Video:** [To be recorded on Loom]  
-**GitHub Repo:** [To be created: sprint-day2-aziz]  
+**GitHub Repo:** https://github.com/aziz-turgunoff/sprint-aziz-turgunoff (in the `day2` subfolder)  
 **Hours Spent:** ~6 hours
 
 ## Problem Statement

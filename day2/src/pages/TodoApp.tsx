@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import type { Todo } from '@/lib/supabase'
@@ -23,10 +23,10 @@ export default function TodoApp() {
     sortBy: 'created_at',
     sortOrder: 'desc',
   })
-  const [editingTodo] = useState<Todo | null>(null)
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
   const [showEditDialog, setShowEditDialog] = useState(false)
 
-  const loadTodos = async () => {
+  const loadTodos = useCallback(async () => {
     try {
       const data = await getTodos(filters)
       setTodos(data)
@@ -35,11 +35,17 @@ export default function TodoApp() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadTodos()
-  }, [filters])
+  }, [loadTodos])
+
+  const handleEdit = (todo: Todo) => {
+    setEditingTodo(todo)
+    setShowEditDialog(true)
+  }
 
   const handleSignOut = async () => {
     await signOut()
@@ -87,7 +93,7 @@ export default function TodoApp() {
               <label className="text-sm font-medium">Status:</label>
               <Select
                 value={filters.status}
-                onValueChange={(v) => setFilters({ ...filters, status: v as any })}
+                onValueChange={(v) => setFilters({ ...filters, status: v as 'all' | 'active' | 'completed' })}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />
@@ -104,7 +110,7 @@ export default function TodoApp() {
               <label className="text-sm font-medium">Priority:</label>
               <Select
                 value={filters.priority}
-                onValueChange={(v) => setFilters({ ...filters, priority: v as any })}
+                onValueChange={(v) => setFilters({ ...filters, priority: v as 'low' | 'med' | 'high' | 'all' })}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />
@@ -122,7 +128,7 @@ export default function TodoApp() {
               <label className="text-sm font-medium">Sort by:</label>
               <Select
                 value={filters.sortBy}
-                onValueChange={(v) => setFilters({ ...filters, sortBy: v as any })}
+                onValueChange={(v) => setFilters({ ...filters, sortBy: v as 'due_date' | 'created_at' })}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />
@@ -142,12 +148,13 @@ export default function TodoApp() {
         {loading ? (
           <div className="text-center py-12 text-muted-foreground">Loading todos...</div>
         ) : (
-          <TodoList todos={todos} onUpdate={loadTodos} />
+          <TodoList todos={todos} onUpdate={loadTodos} onEdit={handleEdit} />
         )}
       </div>
 
       {/* Edit Dialog */}
       <TodoEditDialog
+        key={editingTodo?.id || 'new'}
         todo={editingTodo}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}

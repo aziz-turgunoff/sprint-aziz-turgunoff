@@ -48,8 +48,9 @@ export function TodoForm({ onSuccess }: TodoFormProps) {
       setPriority('med')
       
       onSuccess()
-    } catch (err: any) {
-      setError(err.message || 'Failed to create todo')
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Failed to create todo'
+      setError(errMsg)
     } finally {
       setLoading(false)
     }
@@ -97,7 +98,7 @@ export function TodoForm({ onSuccess }: TodoFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
-              <Select value={priority} onValueChange={(v) => setPriority(v as any)} disabled={loading}>
+              <Select value={priority} onValueChange={(v) => setPriority(v as 'low' | 'med' | 'high')} disabled={loading}>
                 <SelectTrigger id="priority">
                   <SelectValue />
                 </SelectTrigger>

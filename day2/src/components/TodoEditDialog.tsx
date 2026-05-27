@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { Todo } from '@/lib/supabase'
 import { updateTodo } from '@/lib/todos'
 import type { UpdateTodoInput } from '@/lib/todos'
@@ -24,16 +24,6 @@ export function TodoEditDialog({ todo, open, onOpenChange, onSuccess }: TodoEdit
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Update form when todo changes
-  useEffect(() => {
-    if (todo) {
-      setTitle(todo.title)
-      setDescription(todo.description || '')
-      setDueDate(todo.due_date || '')
-      setPriority(todo.priority)
-    }
-  }, [todo])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!todo) return
@@ -58,8 +48,9 @@ export function TodoEditDialog({ todo, open, onOpenChange, onSuccess }: TodoEdit
       await updateTodo(todo.id, input)
       onSuccess()
       onOpenChange(false)
-    } catch (err: any) {
-      setError(err.message || 'Failed to update todo')
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Failed to update todo'
+      setError(errMsg)
     } finally {
       setLoading(false)
     }
@@ -116,7 +107,7 @@ export function TodoEditDialog({ todo, open, onOpenChange, onSuccess }: TodoEdit
 
               <div className="space-y-2">
                 <Label htmlFor="edit-priority">Priority</Label>
-                <Select value={priority} onValueChange={(v) => setPriority(v as any)} disabled={loading}>
+                <Select value={priority} onValueChange={(v) => setPriority(v as 'low' | 'med' | 'high')} disabled={loading}>
                   <SelectTrigger id="edit-priority">
                     <SelectValue />
                   </SelectTrigger>

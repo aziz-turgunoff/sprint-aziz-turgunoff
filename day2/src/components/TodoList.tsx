@@ -5,9 +5,10 @@ import { EmptyState } from './EmptyState'
 type TodoListProps = {
   todos: Todo[]
   onUpdate: () => void
+  onEdit: (todo: Todo) => void
 }
 
-export function TodoList({ todos, onUpdate }: TodoListProps) {
+export function TodoList({ todos, onUpdate, onEdit }: TodoListProps) {
   if (todos.length === 0) {
     return <EmptyState />
   }
@@ -15,7 +16,7 @@ export function TodoList({ todos, onUpdate }: TodoListProps) {
   return (
     <div className="space-y-2">
       {todos.map((todo) => (
-        <TodoItem key={todo.id} todo={todo} onUpdate={onUpdate} />
+        <TodoItem key={todo.id} todo={todo} onUpdate={onUpdate} onEdit={onEdit} />
       ))}
     </div>
   )

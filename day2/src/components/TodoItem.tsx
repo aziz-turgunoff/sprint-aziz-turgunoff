@@ -20,9 +20,10 @@ import { cn } from '@/lib/utils'
 type TodoItemProps = {
   todo: Todo
   onUpdate: () => void
+  onEdit: (todo: Todo) => void
 }
 
-export function TodoItem({ todo, onUpdate }: TodoItemProps) {
+export function TodoItem({ todo, onUpdate, onEdit }: TodoItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(todo.title)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -148,7 +149,7 @@ export function TodoItem({ todo, onUpdate }: TodoItemProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsEditing(true)}
+            onClick={() => onEdit(todo)}
             disabled={loading}
           >
             <Edit2 className="h-4 w-4" />

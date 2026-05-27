@@ -1,189 +1,138 @@
-# Day 2 - Multi-User Todo App
+# Day 2 - Todo App with Authentication
 
-A full-stack todo application with authentication, built with React, TypeScript, Supabase, and shadcn/ui.
+A full-stack todo application with multi-user authentication, built with React, TypeScript, Vite, Tailwind CSS, shadcn/ui, and Supabase.
 
-## 🚀 Live Demo
+## Problem Statement
 
-[Live URL will be added after Vercel deployment]
+Solo entrepreneurs and small team leads need a simple, fast task manager without the complexity of Notion or the cost of Todoist. This app provides a clean, focused todo experience with proper authentication and data isolation.
 
-## ✨ Features
+## Live Demo
 
-### Authentication
-- ✅ Email + Password signup and login
-- ✅ Magic link (passwordless) authentication
-- ✅ Password reset flow
-- ✅ Session persistence across page reloads
-- ✅ Protected routes with automatic redirect
+🚀 **Live URL:** [Coming soon - will be deployed to Vercel]
 
-### Todo Management
-- ✅ Create todos with title, description, due date, and priority
-- ✅ Mark todos as complete/incomplete
-- ✅ Edit todos inline or via modal
-- ✅ Delete todos with confirmation dialog
-- ✅ Filter by status (All / Active / Completed)
-- ✅ Sort by date created, due date, or priority
-- ✅ Real-time updates from Supabase
-- ✅ User-isolated data with Row Level Security (RLS)
+## Features
 
-### UI/UX
-- ✅ Clean, modern interface with shadcn/ui components
-- ✅ Responsive design (mobile, tablet, desktop)
-- ✅ Loading states and empty states
-- ✅ Form validation with helpful error messages
-- ✅ Priority badges with color coding
-- ✅ Optimistic UI updates
+### Authentication ✅
+- [x] Email + password signup/login
+- [x] Magic link authentication (passwordless)
+- [x] Password reset flow
+- [x] Protected routes with session persistence
+- [x] No flash of unauthenticated content
 
-## 🛠️ Tech Stack
+### Todo Management ✅
+- [x] Create todos with title (max 120 chars), description, due date, priority
+- [x] Inline title editing
+- [x] Full modal editing for all fields
+- [x] Toggle completion with optimistic UI
+- [x] Delete with confirmation dialog
+- [x] Character counter on title input
 
-- **Frontend**: React 19, TypeScript, Vite
-- **Styling**: Tailwind CSS, shadcn/ui
-- **Backend**: Supabase (PostgreSQL + Auth + RLS)
-- **Routing**: React Router v7
-- **Deployment**: Vercel
+### Filtering & Sorting ✅
+- [x] Filter by status (all/active/completed)
+- [x] Filter by priority (all/low/med/high)
+- [x] Sort by created date, due date, or priority
+- [x] Real-time counter showing active/completed todos
 
-## 📦 Setup Instructions
+### UI/UX ✅
+- [x] Clean, modern interface with shadcn/ui components
+- [x] Responsive design (mobile, tablet, desktop)
+- [x] Empty state messaging
+- [x] Loading states and skeletons
+- [x] Priority color coding (red/yellow/green)
+- [x] Optimistic UI updates
+
+### Security ✅
+- [x] Row Level Security (RLS) - users can only see their own todos
+- [x] User isolation verified with 2 test accounts
+- [x] Secure session management
+
+## Tech Stack
+
+- **Frontend:** React 19.0.0, TypeScript 6.0.2, Vite 8.0.12
+- **Styling:** Tailwind CSS 4.3.0
+- **UI Components:** shadcn/ui (Radix UI primitives)
+- **Backend:** Supabase (PostgreSQL + Auth + RLS)
+- **Routing:** React Router DOM 7.15.1
+- **Deployment:** Vercel
+
+## Setup Instructions
 
 ### Prerequisites
-- Node.js 18+ installed
+- Node.js 18+ and npm
 - Supabase account
-- Git
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/aziz-turgunoff/sprint-aziz-turgunoff.git
-cd sprint-aziz-turgunoff/day2
-```
+### Installation
 
-### 2. Install dependencies
 ```bash
+# Install dependencies
 npm install
-```
 
-### 3. Set up Supabase
+# Run database schema
+# Go to Supabase SQL Editor and run the contents of supabase-schema.sql
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to Project Settings → API
-3. Copy your project URL and anon key
-4. Run the SQL schema from `supabase-schema.sql` in the SQL Editor
-
-### 4. Configure environment variables
-
-Create a `.env` file in the root directory:
-
-```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-### 5. Run locally
-
-```bash
+# Start development server
 npm run dev
-```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-### 6. Build for production
-
-```bash
+# Build for production
 npm run build
-npm run preview
 ```
 
-## 🗄️ Database Schema
+### Database Setup
 
-The app uses a single `todos` table with Row Level Security:
+1. Go to your Supabase project SQL Editor
+2. Run the SQL from `supabase-schema.sql`
+3. This creates the `todos` table with RLS policies
 
-```sql
-- id: uuid (primary key)
-- user_id: uuid (references auth.users)
-- title: text (max 120 chars)
-- description: text (optional)
-- due_date: date (optional)
-- priority: 'low' | 'med' | 'high'
-- completed: boolean
-- created_at: timestamptz
-- updated_at: timestamptz
-```
+## Test Accounts
 
-**RLS Policies**: Users can only view, create, update, and delete their own todos.
+Create your own test accounts by signing up at `/signup`
 
-## 🏗️ Project Structure
+**Test isolation:**
+1. Sign up as user1@test.com
+2. Create some todos
+3. Sign out
+4. Sign up as user2@test.com
+5. Verify you cannot see user1's todos
 
-```
-day2/
-├── src/
-│   ├── components/
-│   │   ├── ui/              # shadcn/ui components
-│   │   └── ProtectedRoute.tsx
-│   ├── contexts/
-│   │   └── AuthContext.tsx  # Global auth state
-│   ├── lib/
-│   │   ├── supabase.ts      # Supabase client
-│   │   └── utils.ts         # Utility functions
-│   ├── pages/
-│   │   ├── LoginPage.tsx
-│   │   ├── SignupPage.tsx
-│   │   ├── ForgotPasswordPage.tsx
-│   │   ├── ResetPasswordPage.tsx
-│   │   └── AppPage.tsx      # Main todo app
-│   ├── App.tsx              # Router setup
-│   └── main.tsx
-├── supabase-schema.sql      # Database schema
-└── package.json
-```
+## Known Issues
 
-## 🔐 Authentication Flow
+- [ ] Magic link redirect needs production URL configuration in Supabase
+- [ ] No mobile app (web-responsive only)
+- [ ] No recurring tasks
+- [ ] No team collaboration features
 
-1. **Signup**: User creates account → Email confirmation sent → Redirect to login
-2. **Login**: Email + password OR magic link → Redirect to /app
-3. **Password Reset**: Request reset → Email sent → Click link → Set new password
-4. **Session**: Persisted in localStorage, auto-refresh on page load
+## What I'd Fix Next
 
-## 🎨 UI Components
+1. **Add recurring tasks** - High user demand, clear value
+2. **Email integration** - Forward emails to create todos
+3. **Keyboard shortcuts** - Quick add with Cmd+K
+4. **Bulk operations** - Select multiple todos to complete/delete
+5. **Dark mode** - Already have Tailwind setup, just need toggle
 
-Built with shadcn/ui for consistency and accessibility:
-- Button, Input, Label, Textarea
-- Card, Dialog, AlertDialog
-- Select, Checkbox
-- All components are customizable via Tailwind
+## Hours Spent
 
-## 📝 Known Issues
+**Estimated:** 6-8 hours  
+**Actual:** [To be filled after completion]
 
-None currently. All features tested and working.
+- Planning & business analysis: 1h
+- Database schema & RLS setup: 0.5h
+- Authentication system: 1.5h
+- Todo CRUD operations: 2h
+- UI/UX with shadcn/ui: 1.5h
+- Testing & bug fixes: 1h
+- Documentation: 0.5h
 
-## 🚀 Deployment
+## Documentation
 
-### Vercel
-1. Push code to GitHub
-2. Import project in Vercel
-3. Add environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
-4. Deploy
+- [BUSINESS.md](./BUSINESS.md) - Business analysis and monetization strategy
+- [DECISIONS.md](./DECISIONS.md) - Technical and product decisions
+- [supabase-schema.sql](./supabase-schema.sql) - Database schema with RLS
 
-## 📊 Time Investment
+## Repository
 
-**Estimated**: 6-8 hours
-**Actual**: [To be filled after completion]
+**GitHub:** [Coming soon - will be pushed after local testing]
 
-## 📄 Documentation
-
-- [BUSINESS.md](./BUSINESS.md) - Business analysis and pricing strategy
-- [DECISIONS.md](./DECISIONS.md) - Technical decisions and rationale
-- [supabase-schema.sql](./supabase-schema.sql) - Database schema
-
-## 🧪 Test Accounts
-
-After deployment, create test accounts:
-- User A: usera@test.com / password123
-- User B: userb@test.com / password123
-
-Verify data isolation between users.
-
-## 🤝 Contributing
-
-This is a sprint project for evaluation. Not accepting contributions.
-
-## 📜 License
+## License
 
 MIT
 import reactDom from 'eslint-plugin-react-dom'

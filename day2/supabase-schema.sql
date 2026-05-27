@@ -1,6 +1,6 @@
 -- Create todos table
-create table if not exists public.todos (
-  id uuid primary key default gen_random_uuid(),
+create table todos (
+  id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
   title text not null check (char_length(title) <= 120),
   description text,
@@ -11,31 +11,32 @@ create table if not exists public.todos (
   updated_at timestamptz default now()
 );
 
--- Create index on user_id for performance
-create index if not exists todos_user_id_idx on public.todos(user_id);
+-- Enable RLS
+alter table todos enable row level security;
 
--- Enable Row Level Security
-alter table public.todos enable row level security;
-
--- Create policies
-create policy "Users can view their own todos"
-  on public.todos for select
+-- RLS Policies
+-- Users can only see their own todos
+create policy "Users can view own todos"
+  on todos for select
   using (auth.uid() = user_id);
 
-create policy "Users can insert their own todos"
-  on public.todos for insert
+-- Users can insert their own todos
+create policy "Users can insert own todos"
+  on todos for insert
   with check (auth.uid() = user_id);
 
-create policy "Users can update their own todos"
-  on public.todos for update
+-- Users can update their own todos
+create policy "Users can update own todos"
+  on todos for update
   using (auth.uid() = user_id);
 
-create policy "Users can delete their own todos"
-  on public.todos for delete
+-- Users can delete their own todos
+create policy "Users can delete own todos"
+  on todos for delete
   using (auth.uid() = user_id);
 
--- Create function to update updated_at timestamp
-create or replace function public.handle_updated_at()
+-- Create updated_at trigger
+create or replace function update_updated_at_column()
 returns trigger as $$
 begin
   new.updated_at = now();
@@ -43,8 +44,7 @@ begin
 end;
 $$ language plpgsql;
 
--- Create trigger to automatically update updated_at
-create trigger set_updated_at
-  before update on public.todos
+create trigger update_todos_updated_at
+  before update on todos
   for each row
-  execute function public.handle_updated_at();
+  execute function update_updated_at_column();

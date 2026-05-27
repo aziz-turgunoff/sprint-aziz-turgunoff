@@ -1,63 +1,55 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card'
+import { useAuth } from '@/contexts/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-export function ResetPassword() {
+export default function ResetPassword() {
+  const navigate = useNavigate()
+  const { updatePassword } = useAuth()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { updatePassword } = useAuth()
-  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters')
       return
     }
 
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
     setLoading(true)
 
-    try {
-      const { error } = await updatePassword(password)
-      if (error) throw error
-      navigate('/app')
-    } catch (err: any) {
-      setError(err.message || 'Failed to reset password')
-    } finally {
+    const { error } = await updatePassword(password)
+
+    if (error) {
+      setError(error.message)
       setLoading(false)
+    } else {
+      // Success - redirect to app
+      navigate('/app')
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
-      <Card className="w-full max-w-md shadow-xl border-0">
-        <CardHeader className="space-y-3 pb-6">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-            T
-          </div>
-          <CardTitle className="text-2xl text-center">Set new password</CardTitle>
-          <CardDescription className="text-center">Enter your new password below</CardDescription>
+    <div className="flex items-center justify-center min-h-screen bg-muted/40">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Set new password</CardTitle>
+          <CardDescription>Enter your new password below</CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
-                {error}
-              </div>
-            )}
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="password">New Password</Label>
               <Input
@@ -67,25 +59,30 @@ export function ResetPassword() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
+                minLength={6}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirm-password">Confirm Password</Label>
               <Input
-                id="confirmPassword"
+                id="confirm-password"
                 type="password"
+                placeholder="Re-enter your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
-          </CardContent>
-          <CardFooter>
+            {error && (
+              <p className="text-sm text-destructive">{error}</p>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Updating...' : 'Update password'}
             </Button>
-          </CardFooter>
-        </form>
+          </form>
+        </CardContent>
       </Card>
     </div>
   )

@@ -1,160 +1,167 @@
-# Day 2 - Todo App with Authentication
+# Day 2 — Multi-User Todo App
 
-A full-stack todo application with multi-user authentication, built with React, TypeScript, Vite, Tailwind CSS, shadcn/ui, and Supabase.
+**Live URL:** [To be deployed]  
+**Demo Video:** [To be recorded on Loom]  
+**GitHub Repo:** [To be created: sprint-day2-aziz]  
+**Hours Spent:** ~6 hours
 
 ## Problem Statement
 
-Solo entrepreneurs and small team leads need a simple, fast task manager without the complexity of Notion or the cost of Todoist. This app provides a clean, focused todo experience with proper authentication and data isolation.
+Freelance consultants and agency owners (1-5 person teams) managing 10-30 active client projects waste 30-60 minutes daily searching for "what did I promise Client X?" across email, Slack, and notes. Existing solutions like Todoist ($4/mo) lack client-centric views, Notion ($10/mo) requires 2-3 hours of setup, and Asana ($10-15/mo) is built for internal teams, not client-facing work.
 
-## Live Demo
+This is a simple, client-focused todo app designed specifically for freelancers. Track follow-ups across multiple clients without the overhead of complex project management tools. The activation moment is creating your first todo with a due date—proving you're serious about staying organized.
 
-🚀 **Live URL:** [Coming soon - will be deployed to Vercel]
-
-## Features
-
-### Authentication ✅
-- [x] Email + password signup/login
-- [x] Magic link authentication (passwordless)
-- [x] Password reset flow
-- [x] Protected routes with session persistence
-- [x] No flash of unauthenticated content
-
-### Todo Management ✅
-- [x] Create todos with title (max 120 chars), description, due date, priority
-- [x] Inline title editing
-- [x] Full modal editing for all fields
-- [x] Toggle completion with optimistic UI
-- [x] Delete with confirmation dialog
-- [x] Character counter on title input
-
-### Filtering & Sorting ✅
-- [x] Filter by status (all/active/completed)
-- [x] Filter by priority (all/low/med/high)
-- [x] Sort by created date, due date, or priority
-- [x] Real-time counter showing active/completed todos
-
-### UI/UX ✅
-- [x] Clean, modern interface with shadcn/ui components
-- [x] Responsive design (mobile, tablet, desktop)
-- [x] Empty state messaging
-- [x] Loading states and skeletons
-- [x] Priority color coding (red/yellow/green)
-- [x] Optimistic UI updates
-
-### Security ✅
-- [x] Row Level Security (RLS) - users can only see their own todos
-- [x] User isolation verified with 2 test accounts
-- [x] Secure session management
-
-## Tech Stack
-
-- **Frontend:** React 19.0.0, TypeScript 6.0.2, Vite 8.0.12
-- **Styling:** Tailwind CSS 4.3.0
-- **UI Components:** shadcn/ui (Radix UI primitives)
-- **Backend:** Supabase (PostgreSQL + Auth + RLS)
-- **Routing:** React Router DOM 7.15.1
-- **Deployment:** Vercel
-
-## Setup Instructions
+## Setup
 
 ### Prerequisites
-- Node.js 18+ and npm
+- Node.js 18+
 - Supabase account
 
 ### Installation
 
 ```bash
-# Install dependencies
+cd day2
 npm install
+```
 
-# Run database schema
-# Go to Supabase SQL Editor and run the contents of supabase-schema.sql
+### Environment Variables
 
-# Start development server
-npm run dev
+Create a `.env` file:
 
-# Build for production
-npm run build
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ### Database Setup
 
 1. Go to your Supabase project SQL Editor
-2. Run the SQL from `supabase-schema.sql`
-3. This creates the `todos` table with RLS policies
+2. Run the SQL in `supabase-schema.sql`
+3. Verify the `todos` table was created with RLS policies
+4. Copy your project URL and anon key to `.env`
 
-## Test Accounts
+### Run Development Server
 
-Create your own test accounts by signing up at `/signup`
+```bash
+npm run dev
+```
 
-**Test isolation:**
-1. Sign up as user1@test.com
-2. Create some todos
-3. Sign out
-4. Sign up as user2@test.com
-5. Verify you cannot see user1's todos
+Visit `http://localhost:5173`
+
+## Features
+
+### ✅ Completed
+
+**Authentication:**
+- Email + password signup with auto-login
+- Email + password login
+- Magic link login (passwordless)
+- Forgot password flow with email reset link
+- Reset password page (from email link)
+- Session persistence across page reloads
+- Protected routes (redirect to /login if not authenticated)
+- No flash of unauthenticated content
+
+**Todo Management:**
+- Create todo with title, description, due date, priority (low/med/high)
+- Inline edit title (click to edit, blur/Enter to save, Escape to cancel)
+- Full edit modal for all fields (title, description, due date, priority)
+- Toggle complete with checkbox
+- Delete with confirmation dialog
+- Filter by status (all/active/completed)
+- Filter by priority (all/low/med/high)
+- Sort by created date or due date
+- Counter showing X active, Y completed
+- Empty state when no todos
+- Optimistic UI updates (immediate feedback)
+
+**Data Isolation:**
+- Row Level Security (RLS) on todos table
+- Each user can only see/edit their own todos
+- user_id automatically set on create
+- All queries scoped to auth.uid()
+
+**UI/UX:**
+- Responsive design (mobile, tablet, desktop)
+- shadcn/ui components (Button, Input, Card, Dialog, Checkbox, etc.)
+- Form validation (title max 120 chars, required fields)
+- Loading states on all async operations
+- Error handling with user-friendly messages
+- Keyboard shortcuts (Enter/Escape in inline edit)
+
+### 🚧 Partial
+
+None - all planned features completed
+
+### ❌ Cut
+
+- **Client grouping** — Would add a "Clients" table to group todos by client. Cut because it adds 3-4 hours and isn't required by Day 2 brief. Can simulate with description field for MVP.
+- **Recurring todos** — Complex cron logic, 4-5 hours minimum, low activation impact.
+- **Collaboration/sharing** — Requires permissions system, 6-8 hours, only 5% of target market needs this.
+- **Real-time sync** — Supabase subscriptions would be nice but not required. Manual refresh works for MVP.
+- **Tags/labels** — Nice-to-have, but priority field covers most use cases.
+- **Subtasks** — Adds complexity, 3-4 hours, not core to activation.
 
 ## Known Issues
 
-- [ ] Magic link redirect needs production URL configuration in Supabase
-- [ ] No mobile app (web-responsive only)
-- [ ] No recurring tasks
-- [ ] No team collaboration features
+- **No real-time updates** — Changes from other devices/tabs require manual refresh. Would add Supabase subscriptions in production.
+- **No undo for delete** — Once deleted, todos are gone. Would add soft delete (deleted_at column) in production.
+- **No bulk actions** — Can't select multiple todos to delete/complete at once. Low priority for solo users.
+- **Date picker UX** — Native HTML5 date input varies by browser. Would use a custom date picker (e.g., react-day-picker) in production.
+- **No offline support** — Requires internet connection. Would add service worker + local storage in production.
 
 ## What I'd Fix Next
 
-1. **Add recurring tasks** - High user demand, clear value
-2. **Email integration** - Forward emails to create todos
-3. **Keyboard shortcuts** - Quick add with Cmd+K
-4. **Bulk operations** - Select multiple todos to complete/delete
-5. **Dark mode** - Already have Tailwind setup, just need toggle
+1. **Add client grouping** — Most-requested feature hypothesis. Let users group todos by client name. Adds clear differentiation vs Todoist.
+
+2. **Real-time sync** — Use Supabase subscriptions to update todos across tabs/devices instantly. Better UX, reduces confusion.
+
+3. **Email reminders** — "Your task 'Send proposal to Acme Corp' is due in 2 hours." High engagement driver, reduces churn.
+
+4. **Keyboard shortcuts** — Cmd+K to quick-add todo, Cmd+F to search, arrow keys to navigate. Power user feature.
+
+5. **Export to CSV** — Let users export their todo history. Good for freelancers who need to track billable work.
+
+## Tech Stack
+
+- **Frontend:** React 19 + TypeScript + Vite 8
+- **Routing:** react-router-dom v7
+- **Styling:** Tailwind CSS 3 + shadcn/ui (Radix UI primitives)
+- **Icons:** lucide-react
+- **Database:** Supabase (Postgres + Auth + RLS)
+- **Auth:** Supabase Auth (email+password, magic link, password reset)
+- **Deployment:** Vercel (planned)
+
+## Test Accounts
+
+**Account 1:**
+- Email: test1@example.com
+- Password: test123
+
+**Account 2:**
+- Email: test2@example.com
+- Password: test123
+
+(Create these accounts via signup page to test data isolation)
+
+## Business Analysis
+
+See `BUSINESS.md` for full market analysis, pricing hypothesis, CAC/LTV calculations, and competitive positioning.
+
+**TL;DR:** Targeting freelance consultants managing 10-30 client projects. Wedge is client-centric task view (not available in Todoist/Notion without manual setup). Pricing: Free (5 todos) → $8/mo unlimited. Need 35% conversion to hit 77% gross margin. Biggest risk: activation failure (users sign up but never create first todo).
 
 ## Hours Spent
 
-**Estimated:** 6-8 hours  
-**Actual:** [To be filled after completion]
+~6 hours total:
+- 0.5h: Business analysis (BUSINESS.md)
+- 1h: Setup (Supabase schema, shadcn/ui, env config)
+- 1.5h: Auth system (context, pages, protected routes)
+- 1.5h: Todo CRUD (data layer, UI components)
+- 1h: Integration (/app page, filters, sorting)
+- 0.5h: Testing and polish
 
-- Planning & business analysis: 1h
-- Database schema & RLS setup: 0.5h
-- Authentication system: 1.5h
-- Todo CRUD operations: 2h
-- UI/UX with shadcn/ui: 1.5h
-- Testing & bug fixes: 1h
-- Documentation: 0.5h
+## Links
 
-## Documentation
-
-- [BUSINESS.md](./BUSINESS.md) - Business analysis and monetization strategy
-- [DECISIONS.md](./DECISIONS.md) - Technical and product decisions
-- [supabase-schema.sql](./supabase-schema.sql) - Database schema with RLS
-
-## Repository
-
-**GitHub:** https://github.com/aziz-turgunoff/sprint-aziz-turgunoff
-
-## License
-
-MIT
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **BUSINESS.md:** Market analysis and pricing strategy
+- **DECISIONS.md:** Technical and product decisions
+- **supabase-schema.sql:** Database schema with RLS policies

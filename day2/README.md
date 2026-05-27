@@ -183,8 +183,25 @@ vercel deploy
 ```
 
 Make sure to set environment variables in Vercel dashboard:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_URL` - Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+
+**Steps:**
+1. Push code to GitHub
+2. Connect GitHub repo to Vercel
+3. Add environment variables in Vercel project settings
+4. Vercel will auto-deploy on every push to main/master
+
+**Live URL:** Will be provided after deployment
+
+## Local Testing Checklist
+
+Before deploying, verify:
+- ✅ `npm run build` completes without errors
+- ✅ `npm run preview` shows the app working
+- ✅ All auth pages load (/login, /signup, /forgot-password)
+- ✅ Routing works between pages
+- ✅ Responsive design works on mobile (375px), tablet (768px), desktop (1440px)
 
 ## Support
 

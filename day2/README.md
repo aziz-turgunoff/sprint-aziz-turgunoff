@@ -130,7 +130,7 @@ Create your own test accounts by signing up at `/signup`
 
 ## Repository
 
-**GitHub:** [Coming soon - will be pushed after local testing]
+**GitHub:** https://github.com/aziz-turgunoff/sprint-aziz-turgunoff
 
 ## License
 

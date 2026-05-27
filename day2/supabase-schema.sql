@@ -1,6 +1,6 @@
 -- Create todos table
-create table todos (
-  id uuid primary key default uuid_generate_v4(),
+create table if not exists public.todos (
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   title text not null check (char_length(title) <= 120),
   description text,
@@ -11,27 +11,40 @@ create table todos (
   updated_at timestamptz default now()
 );
 
--- Enable RLS
-alter table todos enable row level security;
+-- Create index on user_id for performance
+create index if not exists todos_user_id_idx on public.todos(user_id);
 
--- RLS Policies: Users can only see their own todos
+-- Enable Row Level Security
+alter table public.todos enable row level security;
+
+-- Create policies
 create policy "Users can view their own todos"
-  on todos for select
+  on public.todos for select
   using (auth.uid() = user_id);
 
 create policy "Users can insert their own todos"
-  on todos for insert
+  on public.todos for insert
   with check (auth.uid() = user_id);
 
 create policy "Users can update their own todos"
-  on todos for update
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
-
-create policy "Users can delete their own todos"
-  on todos for delete
+  on public.todos for update
   using (auth.uid() = user_id);
 
--- Create index for faster queries
-create index todos_user_id_idx on todos(user_id);
-create index todos_created_at_idx on todos(created_at);
+create policy "Users can delete their own todos"
+  on public.todos for delete
+  using (auth.uid() = user_id);
+
+-- Create function to update updated_at timestamp
+create or replace function public.handle_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+-- Create trigger to automatically update updated_at
+create trigger set_updated_at
+  before update on public.todos
+  for each row
+  execute function public.handle_updated_at();

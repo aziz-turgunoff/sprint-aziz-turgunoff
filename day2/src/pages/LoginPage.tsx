@@ -1,156 +1,126 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { Mail, Lock, ArrowRight } from 'lucide-react'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [useMagicLink, setUseMagicLink] = useState(false)
-  const [magicLinkSent, setMagicLinkSent] = useState(false)
-  const { signIn, signInWithMagicLink } = useAuth()
-  const navigate = useNavigate()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const { signIn, sendMagicLink } = useAuth();
+  const navigate = useNavigate();
 
-  const handlePasswordSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    if (!email || !password) {
-      setError('Please fill in all fields')
-      return
+    const { error } = await signIn(email, password);
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    } else {
+      navigate('/app');
     }
+  };
 
-    setLoading(true)
-    try {
-      await signIn(email, password)
-      navigate('/app')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in')
-    } finally {
-      setLoading(false)
+  const handleMagicLink = async () => {
+    setError('');
+    setLoading(true);
+
+    const { error } = await sendMagicLink(email);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setMagicLinkSent(true);
     }
-  }
-
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-
-    if (!email) {
-      setError('Please enter your email')
-      return
-    }
-
-    setLoading(true)
-    try {
-      await signInWithMagicLink(email)
-      setMagicLinkSent(true)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send magic link')
-    } finally {
-      setLoading(false)
-    }
-  }
+    setLoading(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600 mb-8">Sign in to your todo app</p>
-
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Welcome back</CardTitle>
+          <CardDescription>Sign in to your account to continue</CardDescription>
+        </CardHeader>
+        <CardContent>
           {magicLinkSent ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800">
-              <p className="font-medium mb-2">Check your email</p>
-              <p className="text-sm">We sent a magic link to {email}. Click it to sign in.</p>
-              <button
-                onClick={() => {
-                  setMagicLinkSent(false)
-                  setUseMagicLink(false)
-                  setEmail('')
-                }}
-                className="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                Back to sign in
-              </button>
+            <div className="text-center py-4">
+              <p className="text-sm text-green-600">
+                Magic link sent! Check your email to sign in.
+              </p>
             </div>
           ) : (
-            <form onSubmit={useMagicLink ? handleMagicLink : handlePasswordSignIn} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800 text-sm">
-                  {error}
-                </div>
+                <p className="text-sm text-red-600">{error}</p>
               )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign in'}
+              </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-muted-foreground">
+                    Or
+                  </span>
                 </div>
               </div>
-
-              {!useMagicLink && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 rounded-lg transition flex items-center justify-center gap-2"
-              >
-                {loading ? 'Signing in...' : useMagicLink ? 'Send Magic Link' : 'Sign In'}
-                {!loading && <ArrowRight className="w-4 h-4" />}
-              </button>
-
-              <button
+              <Button
                 type="button"
-                onClick={() => {
-                  setUseMagicLink(!useMagicLink)
-                  setError('')
-                  setPassword('')
-                }}
-                className="w-full text-blue-600 hover:text-blue-700 text-sm font-medium py-2"
+                variant="outline"
+                className="w-full"
+                onClick={handleMagicLink}
+                disabled={loading || !email}
               >
-                {useMagicLink ? 'Use password instead' : 'Use magic link instead'}
-              </button>
+                Send magic link
+              </Button>
             </form>
           )}
-
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-gray-600 text-sm">
-              Don't have an account?{' '}
-              <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
-                Sign up
-              </Link>
-            </p>
-            <p className="text-gray-600 text-sm mt-2">
-              <Link to="/forgot-password" className="text-blue-600 hover:text-blue-700 font-medium">
-                Forgot password?
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-2">
+          <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+            Forgot password?
+          </Link>
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-blue-600 hover:underline">
+              Sign up
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
-  )
+  );
 }

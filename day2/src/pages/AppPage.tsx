@@ -1,438 +1,519 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../lib/supabase'
-import { Plus, Trash2, Edit2, Check, LogOut, Filter } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { LogOut, Plus, Pencil, Trash2, Filter } from 'lucide-react';
 
 interface Todo {
-  id: string
-  title: string
-  description: string
-  due_date: string | null
-  priority: 'low' | 'med' | 'high'
-  completed: boolean
-  created_at: string
-  updated_at: string
+  id: string;
+  title: string;
+  description: string | null;
+  due_date: string | null;
+  priority: 'low' | 'med' | 'high';
+  completed: boolean;
+  created_at: string;
 }
 
 export function AppPage() {
-  const { session, signOut } = useAuth()
-  const navigate = useNavigate()
-  const [todos, setTodos] = useState<Todo[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  // Form state
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [dueDate, setDueDate] = useState('')
-  const [priority, setPriority] = useState<'low' | 'med' | 'high'>('med')
-  const [editingId, setEditingId] = useState<string | null>(null)
-
-  // Filter state
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all')
-  const [filterPriority, setFilterPriority] = useState<'all' | 'low' | 'med' | 'high'>('all')
-  const [sortBy, setSortBy] = useState<'created' | 'due' | 'priority'>('created')
+  const { user, signOut } = useAuth();
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [sortBy, setSortBy] = useState<'created' | 'due' | 'priority'>('created');
+  
+  // New todo form
+  const [newTitle, setNewTitle] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newDueDate, setNewDueDate] = useState('');
+  const [newPriority, setNewPriority] = useState<'low' | 'med' | 'high'>('med');
+  
+  // Edit dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editDueDate, setEditDueDate] = useState('');
+  const [editPriority, setEditPriority] = useState<'low' | 'med' | 'high'>('med');
+  
+  // Delete confirmation
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!session) {
-      navigate('/login')
-      return
-    }
-    fetchTodos()
-  }, [session, navigate])
+    fetchTodos();
+  }, []);
 
   const fetchTodos = async () => {
     try {
-      setLoading(true)
       const { data, error } = await supabase
         .from('todos')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false });
 
-      if (error) throw error
-      setTodos(data || [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch todos')
+      if (error) throw error;
+      setTodos(data || []);
+    } catch (error) {
+      console.error('Error fetching todos:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleAddTodo = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-
-    if (!title.trim()) {
-      setError('Title is required')
-      return
-    }
+  const addTodo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
 
     try {
-      if (editingId) {
-        const { error } = await supabase
-          .from('todos')
-          .update({
-            title,
-            description,
-            due_date: dueDate || null,
-            priority,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', editingId)
-
-        if (error) throw error
-        setEditingId(null)
-      } else {
-        const { error } = await supabase.from('todos').insert([
+      const { data, error } = await supabase
+        .from('todos')
+        .insert([
           {
-            title,
-            description,
-            due_date: dueDate || null,
-            priority,
+            title: newTitle,
+            description: newDescription || null,
+            due_date: newDueDate || null,
+            priority: newPriority,
+            user_id: user?.id,
           },
         ])
+        .select()
+        .single();
 
-        if (error) throw error
-      }
+      if (error) throw error;
 
-      setTitle('')
-      setDescription('')
-      setDueDate('')
-      setPriority('med')
-      fetchTodos()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save todo')
+      setTodos([data, ...todos]);
+      setNewTitle('');
+      setNewDescription('');
+      setNewDueDate('');
+      setNewPriority('med');
+    } catch (error) {
+      console.error('Error adding todo:', error);
     }
-  }
+  };
 
-  const handleToggleComplete = async (id: string, completed: boolean) => {
+  const toggleTodo = async (id: string, completed: boolean) => {
     try {
       const { error } = await supabase
         .from('todos')
-        .update({ completed: !completed, updated_at: new Date().toISOString() })
-        .eq('id', id)
+        .update({ completed: !completed })
+        .eq('id', id);
 
-      if (error) throw error
-      fetchTodos()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update todo')
+      if (error) throw error;
+
+      setTodos(todos.map(todo => 
+        todo.id === id ? { ...todo, completed: !completed } : todo
+      ));
+    } catch (error) {
+      console.error('Error toggling todo:', error);
     }
-  }
+  };
 
-  const handleDeleteTodo = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this todo?')) return
+  const openEditDialog = (todo: Todo) => {
+    setEditingTodo(todo);
+    setEditTitle(todo.title);
+    setEditDescription(todo.description || '');
+    setEditDueDate(todo.due_date || '');
+    setEditPriority(todo.priority);
+    setEditDialogOpen(true);
+  };
+
+  const updateTodo = async () => {
+    if (!editingTodo || !editTitle.trim()) return;
 
     try {
-      const { error } = await supabase.from('todos').delete().eq('id', id)
+      const { error } = await supabase
+        .from('todos')
+        .update({
+          title: editTitle,
+          description: editDescription || null,
+          due_date: editDueDate || null,
+          priority: editPriority,
+        })
+        .eq('id', editingTodo.id);
 
-      if (error) throw error
-      fetchTodos()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete todo')
+      if (error) throw error;
+
+      setTodos(todos.map(todo =>
+        todo.id === editingTodo.id
+          ? {
+              ...todo,
+              title: editTitle,
+              description: editDescription || null,
+              due_date: editDueDate || null,
+              priority: editPriority,
+            }
+          : todo
+      ));
+
+      setEditDialogOpen(false);
+      setEditingTodo(null);
+    } catch (error) {
+      console.error('Error updating todo:', error);
     }
-  }
+  };
 
-  const handleEditTodo = (todo: Todo) => {
-    setTitle(todo.title)
-    setDescription(todo.description)
-    setDueDate(todo.due_date || '')
-    setPriority(todo.priority)
-    setEditingId(todo.id)
-  }
+  const openDeleteDialog = (id: string) => {
+    setDeletingTodoId(id);
+    setDeleteDialogOpen(true);
+  };
 
-  const handleSignOut = async () => {
+  const deleteTodo = async () => {
+    if (!deletingTodoId) return;
+
     try {
-      await signOut()
-      navigate('/login')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign out')
+      const { error } = await supabase
+        .from('todos')
+        .delete()
+        .eq('id', deletingTodoId);
+
+      if (error) throw error;
+
+      setTodos(todos.filter(todo => todo.id !== deletingTodoId));
+      setDeleteDialogOpen(false);
+      setDeletingTodoId(null);
+    } catch (error) {
+      console.error('Error deleting todo:', error);
     }
+  };
+
+  const getFilteredTodos = () => {
+    let filtered = todos;
+
+    if (filter === 'active') {
+      filtered = filtered.filter(todo => !todo.completed);
+    } else if (filter === 'completed') {
+      filtered = filtered.filter(todo => todo.completed);
+    }
+
+    return filtered.sort((a, b) => {
+      if (sortBy === 'due') {
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      } else if (sortBy === 'priority') {
+        const priorityOrder = { high: 0, med: 1, low: 2 };
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  };
+
+  const filteredTodos = getFilteredTodos();
+  const activeCount = todos.filter(t => !t.completed).length;
+  const completedCount = todos.filter(t => t.completed).length;
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'text-red-600 bg-red-50 border-red-200';
+      case 'med': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'low': return 'text-green-600 bg-green-50 border-green-200';
+      default: return '';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
-
-  // Filter and sort todos
-  let filteredTodos = todos.filter((todo) => {
-    if (filterStatus === 'active' && todo.completed) return false
-    if (filterStatus === 'completed' && !todo.completed) return false
-    if (filterPriority !== 'all' && todo.priority !== filterPriority) return false
-    return true
-  })
-
-  if (sortBy === 'due') {
-    filteredTodos.sort((a, b) => {
-      if (!a.due_date) return 1
-      if (!b.due_date) return -1
-      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
-    })
-  } else if (sortBy === 'priority') {
-    const priorityOrder = { high: 0, med: 1, low: 2 }
-    filteredTodos.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
-  }
-
-  const activeCount = todos.filter((t) => !t.completed).length
-  const completedCount = todos.filter((t) => t.completed).length
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Todos</h1>
-            <p className="text-sm text-gray-600">
-              {activeCount} active, {completedCount} completed
-            </p>
+            <h1 className="text-2xl font-bold">My Todos</h1>
+            <p className="text-sm text-gray-600">{user?.email}</p>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{session?.user?.email}</span>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
+          <Button variant="outline" onClick={() => signOut()}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign out
+          </Button>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-            {error}
-            <button
-              onClick={() => setError('')}
-              className="ml-4 text-red-600 hover:text-red-700 text-sm font-medium"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
-
-        {/* Add/Edit Form */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            {editingId ? 'Edit Todo' : 'Add New Todo'}
-          </h2>
-          <form onSubmit={handleAddTodo} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="What needs to be done?"
-                maxLength={120}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">{title.length}/120</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add more details..."
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {/* Add Todo Form */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Add New Todo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={addTodo} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title *</Label>
+                  <Input
+                    id="title"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="What needs to be done?"
+                    maxLength={120}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={newDueDate}
+                    onChange={(e) => setNewDueDate(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  placeholder="Add more details..."
+                  rows={2}
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value as 'low' | 'med' | 'high')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="low">Low</option>
-                  <option value="med">Medium</option>
-                  <option value="high">High</option>
-                </select>
+              <div className="flex items-center gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select value={newPriority} onValueChange={(value: any) => setNewPriority(value)}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="med">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button type="submit" className="mt-8">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Todo
+                </Button>
               </div>
+            </form>
+          </CardContent>
+        </Card>
 
-              <div className="flex items-end gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  {editingId ? 'Update' : 'Add'}
-                </button>
-                {editingId && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingId(null)
-                      setTitle('')
-                      setDescription('')
-                      setDueDate('')
-                      setPriority('med')
-                    }}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition"
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </div>
-          </form>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex items-center gap-4 flex-wrap">
-            <Filter className="w-4 h-4 text-gray-600" />
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Status:</span>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'completed')}
-                className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Priority:</span>
-              <select
-                value={filterPriority}
-                onChange={(e) => setFilterPriority(e.target.value as 'all' | 'low' | 'med' | 'high')}
-                className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All</option>
-                <option value="high">High</option>
-                <option value="med">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'created' | 'due' | 'priority')}
-                className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="created">Created</option>
-                <option value="due">Due Date</option>
-                <option value="priority">Priority</option>
-              </select>
-            </div>
-
-            <button
-              onClick={() => {
-                setFilterStatus('all')
-                setFilterPriority('all')
-                setSortBy('created')
-              }}
-              className="ml-auto text-sm text-blue-600 hover:text-blue-700 font-medium"
+        {/* Filters and Stats */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <Button
+              variant={filter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('all')}
             >
-              Clear Filters
-            </button>
+              All ({todos.length})
+            </Button>
+            <Button
+              variant={filter === 'active' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('active')}
+            >
+              Active ({activeCount})
+            </Button>
+            <Button
+              variant={filter === 'completed' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('completed')}
+            >
+              Completed ({completedCount})
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label>Sort by:</Label>
+            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created">Date Created</SelectItem>
+                <SelectItem value="due">Due Date</SelectItem>
+                <SelectItem value="priority">Priority</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Todos List */}
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Loading todos...</p>
-          </div>
-        ) : filteredTodos.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <p className="text-gray-600 mb-2">No todos yet</p>
-            <p className="text-sm text-gray-500">
-              {todos.length === 0 ? 'Create your first todo to get started!' : 'No todos match your filters.'}
-            </p>
-          </div>
+        {filteredTodos.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-gray-500">
+                {filter === 'all' 
+                  ? 'No todos yet. Add one above to get started!'
+                  : `No ${filter} todos.`}
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           <div className="space-y-3">
             {filteredTodos.map((todo) => (
-              <div
-                key={todo.id}
-                className={`bg-white rounded-lg border border-gray-200 p-4 flex items-start gap-4 hover:shadow-sm transition ${
-                  todo.completed ? 'opacity-60' : ''
-                }`}
-              >
-                <button
-                  onClick={() => handleToggleComplete(todo.id, todo.completed)}
-                  className={`mt-1 flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition ${
-                    todo.completed
-                      ? 'bg-green-500 border-green-500'
-                      : 'border-gray-300 hover:border-green-500'
-                  }`}
-                >
-                  {todo.completed && <Check className="w-4 h-4 text-white" />}
-                </button>
-
-                <div className="flex-1 min-w-0">
-                  <h3
-                    className={`font-medium ${
-                      todo.completed ? 'line-through text-gray-500' : 'text-gray-900'
-                    }`}
-                  >
-                    {todo.title}
-                  </h3>
-                  {todo.description && (
-                    <p className="text-sm text-gray-600 mt-1">{todo.description}</p>
-                  )}
-                  <div className="flex items-center gap-3 mt-2 flex-wrap">
-                    {todo.due_date && (
-                      <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                        Due: {new Date(todo.due_date).toLocaleDateString()}
-                      </span>
-                    )}
-                    <span
-                      className={`text-xs px-2 py-1 rounded font-medium ${
-                        todo.priority === 'high'
-                          ? 'bg-red-50 text-red-700'
-                          : todo.priority === 'med'
-                            ? 'bg-yellow-50 text-yellow-700'
-                            : 'bg-green-50 text-green-700'
-                      }`}
-                    >
-                      {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
-                    </span>
+              <Card key={todo.id} className={todo.completed ? 'opacity-60' : ''}>
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-4">
+                    <Checkbox
+                      checked={todo.completed}
+                      onCheckedChange={() => toggleTodo(todo.id, todo.completed)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <h3 className={`font-medium ${todo.completed ? 'line-through text-gray-500' : ''}`}>
+                            {todo.title}
+                          </h3>
+                          {todo.description && (
+                            <p className="text-sm text-gray-600 mt-1">{todo.description}</p>
+                          )}
+                          <div className="flex items-center gap-3 mt-2">
+                            <span className={`text-xs px-2 py-1 rounded border ${getPriorityColor(todo.priority)}`}>
+                              {todo.priority.toUpperCase()}
+                            </span>
+                            {todo.due_date && (
+                              <span className="text-xs text-gray-500">
+                                Due: {new Date(todo.due_date).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(todo)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openDeleteDialog(todo.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => handleEditTodo(todo)}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded transition"
-                    title="Edit"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTodo(todo.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded transition"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
       </main>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Todo</DialogTitle>
+            <DialogDescription>Make changes to your todo here.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Title</Label>
+              <Input
+                id="edit-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                maxLength={120}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-due">Due Date</Label>
+                <Input
+                  id="edit-due"
+                  type="date"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-priority">Priority</Label>
+                <Select value={editPriority} onValueChange={(value: any) => setEditPriority(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="med">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={updateTodo}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your todo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteTodo}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  )
+  );
 }

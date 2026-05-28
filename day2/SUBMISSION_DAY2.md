@@ -10,7 +10,7 @@ This Day 2 project is a secure, client-centric, multi-user Todo Application buil
 
 | Item | Link |
 | --- | --- |
-| Live app | https://sprint-aziz-turgunoff-3kje.vercel.app |
+| Live app | https://sprint-aziz-turgunoff-day2.vercel.app |
 | GitHub repo | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff |
 | Demo video | https://drive.google.com/file/d/1iQyu4Q8-pd_d7xS8YCEr5lCOVtBnsxr2/view?usp=sharing |
 | Business analysis | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day2/BUSINESS.md |
@@ -81,7 +81,7 @@ The following test accounts are pre-configured to test data isolation:
 
 ```csv
 Day,Project,Live URL,GitHub URL,Demo Video,Business Doc,Decisions Doc,Status,Hours,Notes
-2,Multi-User Todo App,https://sprint-aziz-turgunoff-3kje.vercel.app,https://github.com/aziz-turgunoff/sprint-aziz-turgunoff,[To be recorded on Loom],https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day2/BUSINESS.md,https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day2/DECISIONS.md,Submitted and verified,6,RLS fully configured; Vercel env vars fixed; tailwindcss-animate resolved; compilation successful.
+2,Multi-User Todo App,https://sprint-aziz-turgunoff-day2.vercel.app,https://github.com/aziz-turgunoff/sprint-aziz-turgunoff,[To be recorded on Loom],https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day2/BUSINESS.md,https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day2/DECISIONS.md,Submitted and verified,6,RLS fully configured; Vercel env vars fixed; tailwindcss-animate resolved; compilation successful.
 ```
 
 ---

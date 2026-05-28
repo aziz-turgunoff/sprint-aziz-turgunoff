@@ -1,11 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts'
+import { Area, AreaChart, Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts'
 import { supabase } from '../lib/supabase'
 
 const statuses = ['pending', 'paid', 'refunded', 'cancelled'] as const
 const regions = ['NA', 'EU', 'APAC', 'LATAM'] as const
 const categories = ['Electronics', 'Apparel', 'Home', 'Books'] as const
 const dateRanges = [7, 30, 90, 180] as const
+
+const STATUS_COLORS: Record<string, string> = {
+  pending: '#f59e0b',   // amber
+  paid: '#22c55e',      // green
+  refunded: '#ef4444',  // red
+  cancelled: '#94a3b8', // slate
+}
+
+// Custom label for the donut chart: "Paid: 12" instead of bare numbers
+const renderPieLabel = ({ name, value, x, y, textAnchor }: any) => (
+  <text x={x} y={y} textAnchor={textAnchor} dominantBaseline="central" className="fill-slate-700 text-xs">
+    {`${name.charAt(0).toUpperCase() + name.slice(1)}: ${value}`}
+  </text>
+)
 
 interface Order {
   id: string
@@ -76,13 +90,27 @@ create table orders (
     setLoading(true)
     setError(null)
     try {
-      const res = (await supabase.from('orders').select('*')) as { data: Order[] | null; error: any }
+      const res = (await supabase.from('orders').select('*')) as { data: any[] | null; error: any }
       const { data, error: fetchError } = res
       if (fetchError) {
         setError(fetchError.message)
         setOrders(fallbackOrders)
       } else if (data) {
-        setOrders(data)
+        // Safe mapping to guarantee all fields are robust and 'amount' is parsed as a number
+        // since Supabase numeric type is returned as a string by postgrest-js
+        const parsedOrders: Order[] = data.map((o) => ({
+          id: o.id || '',
+          order_number: o.order_number || '',
+          customer_name: o.customer_name || '',
+          customer_email: o.customer_email || '',
+          product: o.product || '',
+          category: o.category || '',
+          amount: typeof o.amount === 'string' ? parseFloat(o.amount) : Number(o.amount ?? 0),
+          status: o.status || 'pending',
+          region: o.region || 'NA',
+          created_at: o.created_at || new Date().toISOString(),
+        }))
+        setOrders(parsedOrders)
       }
     } catch (e: any) {
       setError(e?.message ?? String(e))
@@ -104,6 +132,15 @@ create table orders (
     setSelectedCategory('all')
     setRange(30)
   }
+
+  // Count how many filters are actively narrowing the data
+  const activeFilterCount = [
+    search !== '',
+    selectedStatus !== 'all',
+    selectedRegion !== 'all',
+    selectedCategory !== 'all',
+    range !== 30,
+  ].filter(Boolean).length
 
   const exportCSV = () => {
     if (!filteredOrders || filteredOrders.length === 0) {
@@ -189,7 +226,16 @@ create table orders (
             </p>
             {error ? (
               (() => {
-                const missingTable = error.includes("Could not find the table 'public.orders'") || error.includes("Could not find the table 'public.orders' in the schema cache")
+                const errStr = String(error).toLowerCase()
+                // Robust check for missing table, matching common database and Supabase error variants
+                const missingTable =
+                  errStr.includes("could not find the table 'public.orders'") ||
+                  errStr.includes("relation \"public.orders\" does not exist") ||
+                  errStr.includes("relation") ||
+                  errStr.includes("does not exist") ||
+                  errStr.includes("42p01") ||
+                  errStr.includes("schema cache")
+
                 if (missingTable) {
                   return (
                     <div className="mt-3 space-y-3">
@@ -197,21 +243,21 @@ create table orders (
                       <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
-                          className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white"
+                          className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                           onClick={() => navigator.clipboard?.writeText(schemaSQL)}
                         >
                           Copy SQL
                         </button>
                         <button
                           type="button"
-                          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white"
+                          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-indigo-700"
                           onClick={() => loadOrders()}
                         >
                           Retry
                         </button>
                         <button
                           type="button"
-                          className="rounded-md bg-slate-100 px-3 py-2 text-sm font-medium"
+                          className="rounded-md bg-slate-100 px-3 py-2 text-sm font-medium transition hover:bg-slate-200"
                           onClick={() => {
                             setOrders(fallbackOrders)
                             setError(null)
@@ -224,16 +270,40 @@ create table orders (
                     </div>
                   )
                 }
-                return <p className="mt-3 text-sm text-rose-600">Unable to load Supabase data: {error}</p>
+                return (
+                  <div className="mt-3 space-y-3">
+                    <p className="text-sm text-rose-600">Unable to load Supabase data: {error}</p>
+                    <button
+                      type="button"
+                      className="rounded-md bg-slate-100 px-3 py-2 text-sm font-medium transition hover:bg-slate-200"
+                      onClick={() => {
+                        setOrders(fallbackOrders)
+                        setError(null)
+                      }}
+                    >
+                      Use fallback data
+                    </button>
+                  </div>
+                )
               })()
             ) : null}
           </div>
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
+              activeFilterCount > 0
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                : 'bg-slate-200 text-slate-500 cursor-default'
+            }`}
             onClick={resetFilters}
+            disabled={activeFilterCount === 0}
           >
             ↻ Clear filters
+            {activeFilterCount > 0 && (
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </div>
       </header>
@@ -317,7 +387,28 @@ create table orders (
             <ChartCard title="Orders by status">
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
-                  <Pie data={statusBreakdown} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} fill="#4f46e5" label />
+                  <Pie
+                    data={statusBreakdown}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={80}
+                    paddingAngle={3}
+                    label={renderPieLabel}
+                  >
+                    {statusBreakdown.map((entry) => (
+                      <Cell key={entry.name} fill={STATUS_COLORS[entry.name] || '#4f46e5'} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number, name: string) => [`${value} orders`, name.charAt(0).toUpperCase() + name.slice(1)]}
+                  />
+                  <Legend
+                    formatter={(value: string) => value.charAt(0).toUpperCase() + value.slice(1)}
+                    iconType="circle"
+                    iconSize={8}
+                    wrapperStyle={{ fontSize: '12px' }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </ChartCard>

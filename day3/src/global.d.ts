@@ -1,1 +1,1 @@
-// Global type declarations (currently empty)
+/// <reference types="vite/client" />

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { OnboardingFormData } from '../types/form';
-import { Edit3, AlertCircle, Building2, User, HelpCircle } from 'lucide-react';
+import { Edit2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Card } from './ui/card';
@@ -14,180 +14,158 @@ interface Step4Props {
 
 export const Step4: React.FC<Step4Props> = ({ data, errors, onChange, onEdit }) => {
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <span className="text-[11px] font-bold tracking-widest text-indigo-600 uppercase">Step 04</span>
-        <h3 className="text-xl font-bold text-slate-800 font-display">
-          Review & Verification
-        </h3>
-        <p className="text-xs text-slate-500">Double check your inputs before generating the automated routing pipeline.</p>
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          Review & Submit
+        </h2>
+        <p className="text-slate-600">Please review your information before submitting</p>
       </div>
 
-      <div className="space-y-4">
-        {/* Company & Contact review side-by-side or stacked grid */}
-        <div className="grid sm:grid-cols-2 gap-4">
-          {/* Company details */}
-          <Card className="border border-slate-100 bg-slate-50/20 p-5 rounded-2xl shadow-none relative hover:border-slate-200 transition-colors">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Building2 className="w-3.5 h-3.5 text-indigo-500" />
-                Company Profile
-              </h4>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => onEdit(1)}
-                className="h-7 px-2.5 rounded-lg text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border border-transparent hover:border-indigo-150 transition-all"
-              >
-                <Edit3 size={11} className="mr-1" />
-                Edit
-              </Button>
+      {/* Company Information */}
+      <Card className="border-2 border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+        <div className="p-5">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="font-bold text-lg text-slate-900">Company Information</h3>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(1)}
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 -mt-1"
+            >
+              <Edit2 size={16} className="mr-1" />
+              Edit
+            </Button>
+          </div>
+          <dl className="grid gap-3 text-sm">
+            <div className="flex justify-between py-2 border-b border-slate-100">
+              <dt className="text-slate-600 font-medium">Company Name:</dt>
+              <dd className="font-semibold text-slate-900">{data.companyName}</dd>
             </div>
-            <div className="space-y-2.5 text-sm">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Name</span>
-                <span className="font-semibold text-slate-800">{data.companyName}</span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Website</span>
-                <a href={data.website} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline break-all">
-                  {data.website}
-                </a>
-              </div>
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Size</span>
-                  <span className="font-semibold text-slate-800 text-xs">{data.companySize} employees</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Industry</span>
-                  <span className="font-semibold text-slate-800 text-xs">{data.industry}</span>
-                </div>
-              </div>
+            <div className="flex justify-between py-2 border-b border-slate-100">
+              <dt className="text-slate-600 font-medium">Website:</dt>
+              <dd className="font-semibold text-blue-600">{data.website}</dd>
             </div>
-          </Card>
-
-          {/* Contact Details */}
-          <Card className="border border-slate-100 bg-slate-50/20 p-5 rounded-2xl shadow-none relative hover:border-slate-200 transition-colors">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-indigo-500" />
-                Primary Contact
-              </h4>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => onEdit(2)}
-                className="h-7 px-2.5 rounded-lg text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border border-transparent hover:border-indigo-150 transition-all"
-              >
-                <Edit3 size={11} className="mr-1" />
-                Edit
-              </Button>
+            <div className="flex justify-between py-2 border-b border-slate-100">
+              <dt className="text-slate-600 font-medium">Company Size:</dt>
+              <dd className="font-semibold text-slate-900">{data.companySize} employees</dd>
             </div>
-            <div className="space-y-2.5 text-sm">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Full Name</span>
-                <span className="font-semibold text-slate-800">{data.fullName}</span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Work Email</span>
-                <span className="font-semibold text-slate-800 break-all">{data.workEmail}</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Role</span>
-                  <span className="font-semibold text-slate-800 text-xs truncate block">{data.role}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Phone</span>
-                  <span className="font-semibold text-slate-800 text-xs">
-                    {data.phone ? data.phone : <span className="text-slate-400 font-normal italic">not provided</span>}
-                  </span>
-                </div>
-              </div>
+            <div className="flex justify-between py-2">
+              <dt className="text-slate-600 font-medium">Industry:</dt>
+              <dd className="font-semibold text-slate-900">{data.industry}</dd>
             </div>
-          </Card>
+          </dl>
         </div>
+      </Card>
 
-        {/* Use Case details */}
-        <Card className="border border-slate-100 bg-slate-50/20 p-5 rounded-2xl shadow-none relative hover:border-slate-200 transition-colors">
-          <div className="flex justify-between items-center mb-3">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <HelpCircle className="w-3.5 h-3.5 text-indigo-500" />
-              Objectives & Requirements
-            </h4>
+      {/* Contact Information */}
+      <Card className="border-2 border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+        <div className="p-5">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="font-bold text-lg text-slate-900">Contact Information</h3>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(2)}
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 -mt-1"
+            >
+              <Edit2 size={16} className="mr-1" />
+              Edit
+            </Button>
+          </div>
+          <dl className="grid gap-3 text-sm">
+            <div className="flex justify-between py-2 border-b border-slate-100">
+              <dt className="text-slate-600 font-medium">Full Name:</dt>
+              <dd className="font-semibold text-slate-900">{data.fullName}</dd>
+            </div>
+            <div className="flex justify-between py-2 border-b border-slate-100">
+              <dt className="text-slate-600 font-medium">Work Email:</dt>
+              <dd className="font-semibold text-blue-600">{data.workEmail}</dd>
+            </div>
+            <div className="flex justify-between py-2 border-b border-slate-100">
+              <dt className="text-slate-600 font-medium">Role:</dt>
+              <dd className="font-semibold text-slate-900">{data.role}</dd>
+            </div>
+            {data.phone && (
+              <div className="flex justify-between py-2">
+                <dt className="text-slate-600 font-medium">Phone:</dt>
+                <dd className="font-semibold text-slate-900">{data.phone}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      </Card>
+
+      {/* Use Case */}
+      <Card className="border-2 border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+        <div className="p-5">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="font-bold text-lg text-slate-900">Use Case</h3>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => onEdit(3)}
-              className="h-7 px-2.5 rounded-lg text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border border-transparent hover:border-indigo-150 transition-all"
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 -mt-1"
             >
-              <Edit3 size={11} className="mr-1" />
+              <Edit2 size={16} className="mr-1" />
               Edit
             </Button>
           </div>
-          <div className="space-y-3.5 text-sm">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1.5">Selected Goals</span>
-              <div className="flex flex-wrap gap-1.5">
-                {data.primaryGoals.map((goal) => (
-                  <span key={goal} className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-0.5 rounded-full text-xs font-semibold">
-                    {goal}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Expected Monthly Volume</span>
-                <span className="font-semibold text-slate-800">{data.expectedVolume}</span>
-              </div>
-              {data.additionalInfo && (
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Additional Context</span>
-                  <p className="text-xs text-slate-600 bg-white p-2.5 rounded-xl border border-slate-100/60 mt-1 max-h-[80px] overflow-y-auto leading-relaxed">
-                    {data.additionalInfo}
-                  </p>
+          <dl className="grid gap-3 text-sm">
+            <div className="py-2 border-b border-slate-100">
+              <dt className="text-slate-600 font-medium mb-2">Primary Goals:</dt>
+              <dd className="font-semibold">
+                <div className="flex flex-wrap gap-2">
+                  {data.primaryGoals.map((goal) => (
+                    <span key={goal} className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
+                      {goal}
+                    </span>
+                  ))}
                 </div>
-              )}
+              </dd>
             </div>
-          </div>
-        </Card>
-
-        {/* Terms Box */}
-        <div className={`p-4 rounded-2xl border transition-all ${
-          errors.agreedToTerms 
-            ? 'border-rose-200 bg-rose-50/20' 
-            : 'border-slate-100 bg-slate-50/20'
-        }`}>
-          <div className="flex items-start gap-3">
-            <Checkbox
-              id="terms"
-              checked={data.agreedToTerms}
-              onCheckedChange={(checked) => onChange('agreedToTerms', checked as boolean)}
-              className="mt-0.5 border-slate-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-            />
-            <label htmlFor="terms" className="text-xs leading-relaxed text-slate-600 cursor-pointer select-none">
-              I authorize the processing of my submission and agree to the{' '}
-              <a href="#" className="text-indigo-600 hover:text-indigo-700 font-semibold underline decoration-indigo-200 hover:decoration-indigo-500">
-                Terms of Service
-              </a>{' '}
-              and{' '}
-              <a href="#" className="text-indigo-600 hover:text-indigo-700 font-semibold underline decoration-indigo-200 hover:decoration-indigo-500">
-                Privacy Policy
-              </a>.
-            </label>
-          </div>
-          {errors.agreedToTerms && (
-            <p className="text-xs text-rose-600 flex items-center gap-1 mt-2 font-medium ml-7 animate-fade-in">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              {errors.agreedToTerms}
-            </p>
-          )}
+            <div className="flex justify-between py-2 border-b border-slate-100">
+              <dt className="text-slate-600 font-medium">Expected Volume:</dt>
+              <dd className="font-semibold text-slate-900">{data.expectedVolume}</dd>
+            </div>
+            {data.additionalInfo && (
+              <div className="py-2">
+                <dt className="text-slate-600 font-medium mb-2">Additional Information:</dt>
+                <dd className="font-medium text-slate-700 bg-slate-50 p-3 rounded-lg">{data.additionalInfo}</dd>
+              </div>
+            )}
+          </dl>
         </div>
+      </Card>
+
+      {/* Terms and Conditions */}
+      <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-5 space-y-2">
+        <div className="flex items-start space-x-3">
+          <Checkbox
+            id="terms"
+            checked={data.agreedToTerms}
+            onCheckedChange={(checked) => onChange('agreedToTerms', checked as boolean)}
+            className="mt-1"
+          />
+          <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-slate-700">
+            I agree to the{' '}
+            <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold underline">
+              Terms and Conditions
+            </a>{' '}
+            and{' '}
+            <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold underline">
+              Privacy Policy
+            </a>
+          </label>
+        </div>
+        {errors.agreedToTerms && (
+          <p className="text-sm text-red-600 flex items-center gap-1 ml-7">
+            <span className="text-xs">⚠</span> {errors.agreedToTerms}
+          </p>
+        )}
       </div>
     </div>
   );

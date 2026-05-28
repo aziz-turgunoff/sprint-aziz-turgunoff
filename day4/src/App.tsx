@@ -127,12 +127,27 @@ function App() {
 
     try {
       // Call Supabase Edge Function
-      const { error } = await supabase.functions.invoke('submit-onboarding', {
-        body: { formData }
-      });
+      try {
+        const { error } = await supabase.functions.invoke('submit-onboarding', {
+          body: { formData }
+        });
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+      } catch (invokeError) {
+        console.warn('Edge Function failed, trying direct database fallback:', invokeError);
+        // Fallback: insert directly into onboarding_submissions table
+        const { error: dbError } = await supabase
+          .from('onboarding_submissions')
+          .insert({
+            payload: formData,
+            status: 'received'
+          });
+
+        if (dbError) {
+          throw new Error('Database insert failed: ' + dbError.message);
+        }
       }
 
       // Success
@@ -173,7 +188,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-0 sm:p-6 md:p-10 font-sans">
-      <div className="w-full max-w-6xl bg-white sm:rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row min-h-[750px] border border-slate-100">
+      <div className="w-full max-w-6xl md:max-w-[1120px] md:h-[630px] md:max-h-[95vh] md:aspect-[16/9] bg-white sm:rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-slate-100">
         
         {/* Left Side Panel - Brand & Progress Checklist */}
         <div className="w-full md:w-[40%] bg-slate-900 text-white p-8 md:p-12 flex flex-col justify-between relative overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.15),transparent)]">
@@ -288,7 +303,7 @@ function App() {
         </div>
 
         {/* Right Side Panel - Interactive Form */}
-        <div className="w-full md:w-[60%] p-6 sm:p-10 md:p-12 flex flex-col justify-between">
+        <div className="w-full md:w-[60%] p-6 sm:p-10 md:p-12 flex flex-col justify-between md:h-full">
           <div>
             {/* Header step counter for screen readers and small screens */}
             <div className="md:hidden mb-6 flex justify-between items-center bg-slate-50 p-3.5 rounded-xl border border-slate-100">
@@ -309,7 +324,7 @@ function App() {
             <ProgressBar currentStep={currentStep} totalSteps={4} />
 
             {/* Form Steps container with animations */}
-            <div className="min-h-[420px] py-4 animate-slide-in">
+            <div className="md:h-[360px] overflow-y-auto pr-1 py-1 animate-slide-in">
               {currentStep === 1 && (
                 <Step1 data={formData} errors={errors} onChange={handleChange} />
               )}

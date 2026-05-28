@@ -12,7 +12,7 @@ This Day 2 project is a secure, client-centric, multi-user Todo Application buil
 | --- | --- |
 | Live app | https://sprint-aziz-turgunoff-3kje.vercel.app |
 | GitHub repo | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff |
-| Demo video | [To be recorded on Loom] |
+| Demo video | https://drive.google.com/file/d/1iQyu4Q8-pd_d7xS8YCEr5lCOVtBnsxr2/view?usp=sharing |
 | Business analysis | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day2/BUSINESS.md |
 | Technical decisions | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day2/DECISIONS.md |
 | Development log | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day2/README.md |
@@ -60,12 +60,11 @@ VITE_SUPABASE_ANON_KEY
 
 ---
 
-## Test Accounts
+## Test Account
 
 The following test accounts are pre-configured to test data isolation:
 
-- **Account 1:** `test1@example.com` / `test123`
-- **Account 2:** `test2@example.com` / `test123`
+- **Account 1:** `you@company.com` / `123456`
 
 ---
 

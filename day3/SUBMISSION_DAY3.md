@@ -12,7 +12,7 @@ A comprehensive sales dashboard for e-commerce operations, built for the Head of
 | --- | --- |
 | Live app | https://sprint-aziz-turgunoff-day3.vercel.app |
 | GitHub repo | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/tree/master/day3 |
-| Demo video | [TO BE ADDED] |
+| Demo video | https://drive.google.com/file/d/190-aSRqieiUe-dXa8sEu9v-o283j67mQ/view?usp=sharing |
 | Business analysis | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/master/day3/BUSINESS.md |
 | Technical decisions | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/master/day3/DECISIONS.md |
 | Development log | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/master/day3/README.md |

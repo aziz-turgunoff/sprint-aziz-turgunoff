@@ -12,7 +12,7 @@ QualiFlow is an enterprise-grade B2B Onboarding and Intelligent Lead Qualificati
 | --- | --- |
 | Live app | https://sprint-aziz-turgunoff-day4.vercel.app |
 | GitHub repo | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff |
-| Demo video | [Loom Demo Video] |
+| Demo video |  |
 | Business analysis | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day4/BUSINESS.md |
 | Development log | https://github.com/aziz-turgunoff/sprint-aziz-turgunoff/blob/main/day4/README.md |
 
